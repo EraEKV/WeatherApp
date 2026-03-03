@@ -1,6 +1,7 @@
 package com.example.weatherapp.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,6 +39,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.weatherapp.domain.model.AstronomyInfo
+import com.example.weatherapp.domain.model.ForecastDayInfo
+import com.example.weatherapp.domain.model.ForecastInfo
+import com.example.weatherapp.domain.model.HourlyForecastInfo
 import com.example.weatherapp.domain.model.WeatherInfo
 
 @Composable
@@ -145,6 +149,10 @@ fun WeatherScreen(viewModel: WeatherViewModel) {
                     state.astronomy?.let { astro ->
                         Spacer(modifier = Modifier.height(16.dp))
                         AstronomyCard(astronomy = astro)
+                    }
+                    state.forecast?.let { forecast ->
+                        Spacer(modifier = Modifier.height(24.dp))
+                        ForecastSection(forecast = forecast)
                     }
                 }
                 is WeatherUiState.Error -> {
@@ -270,6 +278,149 @@ fun AstronomyCard(astronomy: AstronomyInfo) {
     }
 }
 
+// ── Forecast Section ──
+
+@Composable
+fun ForecastSection(forecast: ForecastInfo) {
+    Text(
+        text = "3-Day Forecast",
+        fontSize = 22.sp,
+        fontWeight = FontWeight.Bold,
+        color = Color.White,
+        modifier = Modifier.fillMaxWidth()
+    )
+
+    Spacer(modifier = Modifier.height(12.dp))
+
+    forecast.days.forEach { day ->
+        ForecastDayCard(day = day)
+        Spacer(modifier = Modifier.height(12.dp))
+    }
+}
+
+@Composable
+fun ForecastDayCard(day: ForecastDayInfo) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFF263238)
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            // Day header
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = day.date,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                    Text(
+                        text = day.condition,
+                        fontSize = 13.sp,
+                        color = Color(0xFFB0BEC5)
+                    )
+                }
+                Column(horizontalAlignment = Alignment.End) {
+                    Text(
+                        text = "${day.maxTempC.toInt()}\u00B0 / ${day.minTempC.toInt()}\u00B0",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF4FC3F7)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Day details row
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                WeatherDetail(label = "\uD83C\uDF27 Rain", value = "${day.chanceOfRain}%")
+                WeatherDetail(label = "\uD83D\uDCA7 Humidity", value = "${day.avgHumidity}%")
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Hourly forecast scrollable row
+            Text(
+                text = "Hourly",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color(0xFF78909C)
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                day.hourly.forEach { hour ->
+                    HourlyChip(hour = hour)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun HourlyChip(hour: HourlyForecastInfo) {
+    // Extract just HH:MM from "2026-03-03 09:00"
+    val timeLabel = hour.time.substringAfter(" ")
+
+    Card(
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFF37474F)
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = timeLabel,
+                fontSize = 12.sp,
+                color = Color(0xFFB0BEC5)
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text(
+                text = "${hour.tempC.toInt()}\u00B0",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
+
+            Spacer(modifier = Modifier.height(2.dp))
+
+            Text(
+                text = hour.condition,
+                fontSize = 10.sp,
+                color = Color(0xFF78909C),
+                maxLines = 1
+            )
+        }
+    }
+}
+
 @Composable
 fun WeatherDetail(label: String, value: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -286,4 +437,3 @@ fun WeatherDetail(label: String, value: String) {
         )
     }
 }
-

@@ -17,4 +17,11 @@ interface WeatherApi {
         @Query("dt") date: String,
         @Query("key") apiKey: String
     ): AstronomyResponse
+
+    @GET("forecast.json")
+    suspend fun getForecast(
+        @Query("q") city: String,
+        @Query("days") days: Int,
+        @Query("key") apiKey: String
+    ): ForecastResponse
 }

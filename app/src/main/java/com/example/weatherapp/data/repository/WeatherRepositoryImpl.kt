@@ -3,6 +3,9 @@ package com.example.weatherapp.data.repository
 import com.example.weatherapp.BuildConfig
 import com.example.weatherapp.data.remote.WeatherApi
 import com.example.weatherapp.domain.model.AstronomyInfo
+import com.example.weatherapp.domain.model.ForecastDayInfo
+import com.example.weatherapp.domain.model.ForecastInfo
+import com.example.weatherapp.domain.model.HourlyForecastInfo
 import com.example.weatherapp.domain.model.WeatherInfo
 import com.example.weatherapp.domain.repository.WeatherRepository
 import javax.inject.Inject
@@ -34,4 +37,34 @@ class WeatherRepositoryImpl @Inject constructor(
             moonIllumination = astro.moonIllumination
         )
     }
+
+    override suspend fun getForecast(city: String, days: Int): ForecastInfo {
+        val response = api.getForecast(city = city, days = days, apiKey = BuildConfig.WEATHER_API_KEY)
+        return ForecastInfo(
+            days = response.forecast.forecastday.map { day ->
+                ForecastDayInfo(
+                    date = day.date,
+                    maxTempC = day.day.maxTempC,
+                    minTempC = day.day.minTempC,
+                    avgTempC = day.day.avgTempC,
+                    condition = day.day.condition.text,
+                    icon = "https:" + day.day.condition.icon,
+                    chanceOfRain = day.day.dailyChanceOfRain,
+                    avgHumidity = day.day.avgHumidity,
+                    hourly = day.hour.map { hour ->
+                        HourlyForecastInfo(
+                            time = hour.time,
+                            tempC = hour.tempC,
+                            condition = hour.condition.text,
+                            icon = "https:" + hour.condition.icon,
+                            humidity = hour.humidity,
+                            windKph = hour.windKph,
+                            chanceOfRain = hour.chanceOfRain
+                        )
+                    }
+                )
+            }
+        )
+    }
 }
+
