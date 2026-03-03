@@ -10,4 +10,11 @@ interface WeatherApi {
         @Query("q") city: String,
         @Query("key") apiKey: String
     ): WeatherResponse
+
+    @GET("astronomy.json")
+    suspend fun getAstronomy(
+        @Query("q") city: String,
+        @Query("dt") date: String,
+        @Query("key") apiKey: String
+    ): AstronomyResponse
 }

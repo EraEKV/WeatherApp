@@ -12,7 +12,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -35,6 +37,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.weatherapp.domain.model.AstronomyInfo
 import com.example.weatherapp.domain.model.WeatherInfo
 
 @Composable
@@ -58,6 +61,7 @@ fun WeatherScreen(viewModel: WeatherViewModel) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -138,6 +142,10 @@ fun WeatherScreen(viewModel: WeatherViewModel) {
                 }
                 is WeatherUiState.Success -> {
                     WeatherCard(weather = state.weather)
+                    state.astronomy?.let { astro ->
+                        Spacer(modifier = Modifier.height(16.dp))
+                        AstronomyCard(astronomy = astro)
+                    }
                 }
                 is WeatherUiState.Error -> {
                     Card(
@@ -216,6 +224,53 @@ fun WeatherCard(weather: WeatherInfo) {
 }
 
 @Composable
+fun AstronomyCard(astronomy: AstronomyInfo) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFF263238)
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Astronomy",
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                WeatherDetail(label = "☀\uFE0F Sunrise", value = astronomy.sunrise)
+                WeatherDetail(label = "\uD83C\uDF05 Sunset", value = astronomy.sunset)
+                WeatherDetail(label = "\uD83C\uDF19 Moonrise", value = astronomy.moonrise)
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                WeatherDetail(label = "Moon Phase", value = astronomy.moonPhase)
+                WeatherDetail(label = "Illumination", value = "${astronomy.moonIllumination}%")
+            }
+        }
+    }
+}
+
+@Composable
 fun WeatherDetail(label: String, value: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
@@ -231,3 +286,4 @@ fun WeatherDetail(label: String, value: String) {
         )
     }
 }
+

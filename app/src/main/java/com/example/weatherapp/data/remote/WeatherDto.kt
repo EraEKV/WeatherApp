@@ -28,3 +28,22 @@ data class ConditionDto(
     val text: String,
     val icon: String
 )
+
+data class AstronomyResponse(
+    val location: LocationDto,
+    val astronomy: AstronomyDataDto
+)
+
+data class AstronomyDataDto(
+    val astro: AstroDto
+)
+
+data class AstroDto(
+    val sunrise: String,
+    val sunset: String,
+    val moonrise: String,
+    @SerializedName("moon_phase")
+    val moonPhase: String,
+    @SerializedName("moon_illumination")
+    val moonIllumination: String
+)
