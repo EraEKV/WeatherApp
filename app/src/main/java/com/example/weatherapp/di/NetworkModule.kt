@@ -1,5 +1,9 @@
 package com.example.weatherapp.di
 
+import android.content.Context
+import com.chuckerteam.chucker.api.ChuckerCollector
+import com.chuckerteam.chucker.api.ChuckerInterceptor
+import com.chuckerteam.chucker.api.RetentionManager
 import com.example.weatherapp.data.remote.WeatherApi
 import dagger.Module
 import dagger.Provides
@@ -14,11 +18,25 @@ class NetworkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(): OkHttpClient {
+    fun provideOkHttpClient(context: Context): OkHttpClient {
         val logging = HttpLoggingInterceptor()
         logging.level = HttpLoggingInterceptor.Level.BODY
+
+        val chuckerCollector = ChuckerCollector(
+            context = context,
+            showNotification = true,
+            retentionPeriod = RetentionManager.Period.ONE_HOUR
+        )
+
+        val chuckerInterceptor = ChuckerInterceptor.Builder(context)
+            .collector(chuckerCollector)
+            .maxContentLength(250_000L)
+            .alwaysReadResponseBody(true)
+            .build()
+
         return OkHttpClient.Builder()
             .addInterceptor(logging)
+            .addInterceptor(chuckerInterceptor)
             .build()
     }
 
@@ -26,7 +44,7 @@ class NetworkModule {
     @Singleton
     fun provideRetrofit(client: OkHttpClient): Retrofit {
         return Retrofit.Builder()
-            .baseUrl("http://api.weatherapi.com/v1/")
+            .baseUrl("https://api.weatherapi.com/v1/")
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()

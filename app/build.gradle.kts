@@ -59,7 +59,18 @@ dependencies {
     implementation(libs.retrofit.converter.gson)
     implementation(libs.okhttp.logging)
 
+    // Debug tools
+    debugImplementation(libs.chucker.debug)
+    releaseImplementation(libs.chucker.release)
+    debugImplementation(libs.leakcanary)
+
+    // Unit test
     testImplementation(libs.junit)
+    testImplementation(libs.mockito.kotlin)
+    testImplementation(libs.coroutines.test)
+    testImplementation(libs.turbine)
+
+    // Instrumented / integration test
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
